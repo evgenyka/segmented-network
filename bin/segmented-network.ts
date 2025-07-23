@@ -1,20 +1,29 @@
 #!/usr/bin/env node
-import * as cdk from 'aws-cdk-lib';
-import { SegmentedNetworkStack } from '../lib/segmented-network-stack';
+import { App } from 'aws-cdk-lib';
+import { HubStack } from '../lib/hub-and-spoke-stack';
+import { SpokeVpcStack } from '../lib/spoke-vpc-stack';
+import { SpokeRoutingStack } from '../lib/spoke-routing-stack';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
-const app = new cdk.App();
-new SegmentedNetworkStack(app, 'SegmentedNetworkStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+const app = new App();
+const useExplicitRouting = app.node.tryGetContext('useExplicitRouting') === 'true';
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+// Deploy the hub (Transit Gateway and route tables)
+const hubStack = new HubStack(app, 'HubStack');
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
-
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+// Deploy a spoke VPC
+const spokeVpcStack = new SpokeVpcStack(app, 'SpokeVpcStack', {
+  transitGatewayId: hubStack.transitGateway.ref,
+  useExplicitRouting,
 });
+
+// Deploy spoke routing (association and propagation)
+if (useExplicitRouting && hubStack.coreRouteTable) {
+  const attachment = spokeVpcStack.node.tryFindChild('SpokeVpcAttachment') as ec2.CfnTransitGatewayVpcAttachment;
+  new SpokeRoutingStack(app, 'SpokeRoutingStack', {
+    transitGatewayId: hubStack.transitGateway.ref,
+    vpcAttachmentId: attachment.ref,
+    spokeRouteTableId: hubStack.coreRouteTable.ref,
+    useExplicitRouting,
+  });
+}

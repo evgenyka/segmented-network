@@ -15,7 +15,7 @@ export class SpokeVpcStack extends Stack {
     const useExplicitRouting = this.node.tryGetContext('useExplicitRouting') === 'true';
     
     const vpc = new ec2.Vpc(this, 'SpokeVpc', {
-      maxAzs: 2
+      maxAzs: 2,
       subnetConfiguration: [
         {
           name: 'Private',
@@ -32,10 +32,8 @@ export class SpokeVpcStack extends Stack {
       options: {
         ApplianceModeSupport: useExplicitRouting ? 'enable' : 'disable',
         DnsSupport: 'enable',
-        Ipv6Support: 'disable',
+        Ipv6Support: 'disable', 
       },
-      defaultRouteTableAssociation: useExplicitRouting ? 'disable' : 'enable',
-      defaultRouteTablePropagation: useExplicitRouting ? 'disable' : 'enable',
     });
 
     new CfnOutput(this, 'VpcId', { value: vpc.vpcId });
