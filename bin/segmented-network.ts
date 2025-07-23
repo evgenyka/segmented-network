@@ -6,9 +6,10 @@ import { SpokeRoutingStack } from '../lib/spoke-routing-stack';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
 const app = new App();
+const env = { region: 'us-east-1' }; // or your preferred region
 const useExplicitRouting = app.node.tryGetContext('useExplicitRouting') === 'true';
 
-const hubStack = new HubStack(app, 'HubStack', { useExplicitRouting });
+const hubStack = new HubStack(app, 'HubStack', { useExplicitRouting, env });
 
 // Deploy two spoke VPCs
 const spokeVpcStack1 = new SpokeVpcStack(app, 'SpokeVpcStack1', {
