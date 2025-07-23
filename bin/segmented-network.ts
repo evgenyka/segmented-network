@@ -9,16 +9,21 @@ const app = new App();
 const env = { region: 'us-east-1' }; // or your preferred region
 const useExplicitRouting = app.node.tryGetContext('useExplicitRouting') === 'true';
 
-const hubStack = new HubStack(app, 'HubStack', { useExplicitRouting, env });
+const hubStack = new HubStack(app, 'HubStack', { 
+  useExplicitRouting, 
+  env,
+});
 
 // Deploy two spoke VPCs
 const spokeVpcStack1 = new SpokeVpcStack(app, 'SpokeVpcStack1', {
   transitGatewayId: hubStack.transitGateway.ref,
   useExplicitRouting,
+  env,
 });
 const spokeVpcStack2 = new SpokeVpcStack(app, 'SpokeVpcStack2', {
   transitGatewayId: hubStack.transitGateway.ref,
   useExplicitRouting,
+  env,
 });
 
 // Deploy spoke routing for each spoke if explicit routing is enabled
@@ -29,6 +34,7 @@ if (useExplicitRouting && hubStack.coreRouteTable) {
     vpcAttachmentId: attachment1.ref,
     spokeRouteTableId: hubStack.coreRouteTable.ref,
     useExplicitRouting,
+    env,
   });
 
   const attachment2 = spokeVpcStack2.node.tryFindChild('SpokeVpcAttachment') as ec2.CfnTransitGatewayVpcAttachment;
@@ -37,5 +43,6 @@ if (useExplicitRouting && hubStack.coreRouteTable) {
     vpcAttachmentId: attachment2.ref,
     spokeRouteTableId: hubStack.coreRouteTable.ref,
     useExplicitRouting,
+    env,
   });
 }
