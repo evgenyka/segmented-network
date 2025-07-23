@@ -11,6 +11,7 @@ interface SpokeRoutingStackProps extends StackProps {
 }
 
 export class SpokeRoutingStack extends Stack {
+  public readonly useExplicitRouting: boolean;  
   constructor(scope: Construct, id: string, props: SpokeRoutingStackProps) {
     super(scope, id, props);
 
