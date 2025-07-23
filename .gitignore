@@ -1,8 +1,22 @@
-*.js
-!jest.config.js
-*.d.ts
-node_modules
+# Node dependencies
+node_modules/
+package-lock.json
+yarn.lock
 
-# CDK asset staging directory
-.cdk.staging
-cdk.out
+# Build outputs
+dist/
+lib/
+*.js
+*.js.map
+*.d.ts
+
+# CDK asset staging and output
+.cdk.staging/
+cdk.out/
+
+# IDE files
+.vscode/
+.idea/
+
+# Environment files
+.env
